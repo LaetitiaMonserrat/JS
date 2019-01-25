@@ -53,8 +53,8 @@
 					if ((nameCity[0].toUpperCase() == memoryReq[i].nom) && (nameCity[1] == memoryReq[i].cp)) {
 						map.setView([memoryReq[i].latitude, memoryReq[i].longitude], 14);
 						/*On appelle une requête ajax pour afficher les magasins*/
-/*						findStructure(memoryReq[i].latitude, memoryReq[i].longitude);
-*/					}
+						findStructure(/*memoryReq[i].latitude, memoryReq[i].longitude*/);
+					}
 				}
 			} else {
 				for (let i=0; i<rep.length; i++){
@@ -62,8 +62,8 @@
 					if (nameCity[0].toUpperCase() == rep[i].nom) {
 						map.setView([rep[i].latitude, rep[i].longitude], 14);
 						/*On appelle une requête ajax pour afficher les magasins*/
-/*						findStructure(rep[i].latitude, rep[i].longitude);
-*/					}
+						findStructure(/*rep[i].latitude, rep[i].longitude*/);
+					}
 
 					let option = datalist.appendChild(document.createElement('option'));
 					option.setAttribute('value', rep[i].nom+';'+rep[i].cp);
@@ -84,9 +84,14 @@
 		}
 
 
-		function findStructure(latMap, longMap){
-			$get("PHP/structure.php", {latMap:latMap, longMap:longMap}, findStructureDone, error);
-		}
+		function findStructure(/*latMap, longMap*/){
+			console.log(map.getBounds());
+			console.log(map.getBounds().getSouthWest().lat);
+			console.log(map.getBounds().getSouthWest().lng);
+			console.log(map.getBounds().getNorthEast().lat);
+			console.log(map.getBounds().getNorthEast().lng);
+/*			$get("PHP/structure.php", {latMap:latMap, longMap:longMap}, findStructureDone, error);
+*/		}
 
 		 
 /* ________________Fin fonctions________________ */
