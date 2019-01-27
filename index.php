@@ -40,17 +40,21 @@
 		let findCityDone = (r) =>{
 			let rep = JSON.parse(r.responseText);
 			let nameCity = input.value.split(';');
-
+/*			let nameTest = nameCity[0][0]
+*/
 			/*On suprime le contenu de la datalist*/
 			datalist.innerHTML="";
 
 			/*On actualise memoryReq que si rep retourne un résultat*/
 			if (rep.length !== 0) {memoryReq = rep;}
 
+			console.log(nameCity[0][0]);
+			console.log(rep);
+
 			/*Si la requête sql (rep) est vide, on vérifie dans memoryReq (qui est le stockage de la requête sql précédente) sinon on rempli la datalist avec la rep*/
 			if(rep.length == 0){
 				for (let i=0; i<memoryReq.length; i++){
-					if ((nameCity[0].toUpperCase() == memoryReq[i].nom) && (nameCity[1] == memoryReq[i].cp)) {
+					if ((nameCity[0].toUpperCase() == memoryReq[i].nom.toUpperCase()) && (nameCity[1] == memoryReq[i].cp)) {
 						map.setView([memoryReq[i].latitude, memoryReq[i].longitude], 14);
 						/*On appelle une requête ajax pour afficher les magasins*/
 						findStructure(/*memoryReq[i].latitude, memoryReq[i].longitude*/);
@@ -59,7 +63,7 @@
 			} else {
 				for (let i=0; i<rep.length; i++){
 					/*Si le nom dans l'input correspond au nom d'une ville, on recentre la carte sur la ville*/
-					if (nameCity[0].toUpperCase() == rep[i].nom) {
+					if (nameCity[0][0].toUpperCase() == rep[i].nom.toUpperCase()) {
 						map.setView([rep[i].latitude, rep[i].longitude], 14);
 						/*On appelle une requête ajax pour afficher les magasins*/
 						findStructure(/*rep[i].latitude, rep[i].longitude*/);

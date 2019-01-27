@@ -7,11 +7,11 @@ $inputValue = $_GET['inputValue'];
 
 /*Requête préparé*/
 $nameCity = $bdd->prepare("
-	SELECT ville_nom, ville_longitude_deg, ville_latitude_deg, ville_code_postal 
-	FROM villes 
-	WHERE ville_nom 
+	SELECT nom_Ville, long_Ville, lat_Ville, cp_Ville 
+	FROM ville 
+	WHERE nom_Ville 
 	LIKE '$inputValue%'
-	LIMIT 10");
+	LIMIT 13");
 
 /*On exécute la requête pour aller chercher tous les info des villes*/
 $nameCity->execute();
@@ -20,10 +20,10 @@ $resNameCity = array();
 while ($row = $nameCity->fetch(PDO::FETCH_ASSOC)) {
 	
 	$resNameCity[] = [
-		'nom' => $row['ville_nom'],
-		'longitude' => $row['ville_longitude_deg'],
-		'latitude' => $row['ville_latitude_deg'],
-		'cp' => $row['ville_code_postal']
+		'nom' => $row['nom_Ville'],
+		'longitude' => $row['long_Ville'],
+		'latitude' => $row['lat_Ville'],
+		'cp' => $row['cp_Ville']
 	];
 }
 	
