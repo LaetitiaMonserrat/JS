@@ -7,11 +7,11 @@ $inputValue = $_GET['inputValue'];
 
 /*Requête préparé*/
 $nameCity = $bdd->prepare("
-	SELECT nom_Ville, long_Ville, lat_Ville, cp_Ville 
+	SELECT *
 	FROM ville 
 	WHERE nom_Ville 
 	LIKE '$inputValue%'
-	LIMIT 13");
+	LIMIT 10");
 
 /*On exécute la requête pour aller chercher tous les info des villes*/
 $nameCity->execute();
@@ -26,11 +26,10 @@ while ($row = $nameCity->fetch(PDO::FETCH_ASSOC)) {
 		'cp' => $row['cp_Ville']
 	];
 }
-	
+
 $nameCity->closeCursor();
 
 /*header('Content-Type: application/json');*/
 $resNameCity = json_encode($resNameCity);
 echo $resNameCity;
-
 ?>

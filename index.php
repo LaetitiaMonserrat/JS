@@ -12,7 +12,7 @@
 		<fieldset>
 			<legend>Villes de France</legend>
 			<label for="vdf"></label>
-			<input list="bvilles" type="text" name="vdf" id="vdf" value="">
+			<input list="bvilles" type="text" name="vdf" id="vdf" value="" autofocus>
 			<datalist id="bvilles">
 			</datalist>
 		</fieldset>
@@ -25,13 +25,14 @@
 	<script>
 /*________________Variables________________*/
 		/*Pour la map*/
-		var map = L.map('map');
-		var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-		var osmAttrib='Map data © OpenStreetMap contributors';
-		var osm = new L.TileLayer(osmUrl, {attribution: osmAttrib});
+		let map = L.map('map');
+		let osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+		let osmAttrib='Map data © OpenStreetMap contributors';
+		let osm = new L.TileLayer(osmUrl, {attribution: osmAttrib});
 
+		/*Stockage de la requête sql précédente*/
+		let memoryReq;
 
-		var memoryReq;
 		let input = document.getElementById('vdf');
 		let datalist = document.getElementById('bvilles');
 
@@ -40,16 +41,12 @@
 		let findCityDone = (r) =>{
 			let rep = JSON.parse(r.responseText);
 			let nameCity = input.value.split(';');
-/*			let nameTest = nameCity[0][0]
-*/
+
 			/*On suprime le contenu de la datalist*/
 			datalist.innerHTML="";
 
 			/*On actualise memoryReq que si rep retourne un résultat*/
 			if (rep.length !== 0) {memoryReq = rep;}
-
-			console.log(nameCity[0][0]);
-			console.log(rep);
 
 			/*Si la requête sql (rep) est vide, on vérifie dans memoryReq (qui est le stockage de la requête sql précédente) sinon on rempli la datalist avec la rep*/
 			if(rep.length == 0){
@@ -57,16 +54,16 @@
 					if ((nameCity[0].toUpperCase() == memoryReq[i].nom.toUpperCase()) && (nameCity[1] == memoryReq[i].cp)) {
 						map.setView([memoryReq[i].latitude, memoryReq[i].longitude], 14);
 						/*On appelle une requête ajax pour afficher les magasins*/
-						findStructure(/*memoryReq[i].latitude, memoryReq[i].longitude*/);
+						findStructure();
 					}
 				}
 			} else {
 				for (let i=0; i<rep.length; i++){
 					/*Si le nom dans l'input correspond au nom d'une ville, on recentre la carte sur la ville*/
-					if (nameCity[0][0].toUpperCase() == rep[i].nom.toUpperCase()) {
+					if (nameCity[0].toUpperCase() == rep[i].nom.toUpperCase()) {
 						map.setView([rep[i].latitude, rep[i].longitude], 14);
 						/*On appelle une requête ajax pour afficher les magasins*/
-						findStructure(/*rep[i].latitude, rep[i].longitude*/);
+						findStructure();
 					}
 
 					let option = datalist.appendChild(document.createElement('option'));
@@ -76,26 +73,78 @@
 		}
 		let findStructureDone = (r) =>{
 			let rep = JSON.parse(r.responseText);
+			console.log('Requêtes magasin ');
+			console.log(rep);
+			console.log('Markers sur la map :');
+			console.log(markerStructure);
+					/*Stocke tous les marker des magasins*/
+		let markerStructure = new L.LayerGroup();
 
+			if (rep.length == 0){
+				console.log('supprimer les markers');
+				for(let i = 0; i < markerStructure.length; i++){
+					map.removeLayer(markerStructure[i]);
+				}
+				/*markerStructure.forEach(function(value){
+					map.removeLayer(value);
+				});*/
+			}
 			
-
+			for(let i=0; i < rep.length; i++){
+				markerStructure[i] = new markerStructure(rep[i].latitude, rep[i].longitude, rep[i].nom);
+				markerStructure[i].displayOnMap();
+			}
 		}
 /* ________________Fin variables________________ */
 
+/* ________________Début class________________ */
+
+class markerStructure{
+	constructor(lat,long,nomMag){
+		this.lat = lat;
+		this.long = long;
+		this.nomMag = nomMag;
+
+		this.marker = L.marker([this.lat, this.long]);
+		this.popup = L.popup();
+	}
+	displayOnMap(){/*
+		map.on('click', () => {this.clicOnMarkerStructure()});*/
+		this.marker.addTo(map)
+		.bindPopup(this.nomMag);
+	}
+	/*clicOnMarkerStructure(){
+	    this.popup.setLatLng([this.lat, this.long]);
+	    this.popup.setContent(this.nom);
+	    this.popup.openOn(map);
+	}*/
+}
+
+/* ________________Fin class________________ */
+
 /* ________________Début fonctions________________ */
+
+/*		function clicOnMarkerStructure(lat, long, nom){
+			
+		}*/
+		function removeMarker(){
+			markerStructure.forEach(function(value){
+				map.removeLayer(value);
+			});
+		}
+
 		function findCity(inputValue){
 			$get("PHP/city.php", {inputValue:inputValue}, findCityDone, error);	
 		}
 
+		function findStructure(){
+			let latMapMin = map.getBounds().getSouthWest().lat;
+			let latMapMax = map.getBounds().getNorthEast().lat;
+			let longMapMin = map.getBounds().getSouthWest().lng; 
+			let longMapMax = map.getBounds().getNorthEast().lng;
 
-		function findStructure(/*latMap, longMap*/){
-			console.log(map.getBounds());
-			console.log(map.getBounds().getSouthWest().lat);
-			console.log(map.getBounds().getSouthWest().lng);
-			console.log(map.getBounds().getNorthEast().lat);
-			console.log(map.getBounds().getNorthEast().lng);
-/*			$get("PHP/structure.php", {latMap:latMap, longMap:longMap}, findStructureDone, error);
-*/		}
+			$get("PHP/structure.php", {latMapMin:latMapMin, latMapMax:latMapMax, longMapMin:longMapMin, longMapMax:longMapMax}, findStructureDone, error);
+		}
 
 		 
 /* ________________Fin fonctions________________ */
@@ -133,6 +182,26 @@
 			/* Affichage par défaut de la map*/
 			map.setView([47.0, 3.0], 6);
 			map.addLayer(osm);
+
+			map.on('moveend', function(e){ 
+				console.log('> moveend'); 
+				console.log('> moveend'); 
+				console.log('> moveend'); 
+				console.log('> moveend'); 
+
+			});
+
+/*			map.on('zoomstart', function(e){ 
+				console.log('    ( zoomstart'); 
+			});*/
+
+			map.on('zoomend', function(e){ 
+				console.log('    ) zoomend'); 
+			});
+
+			map.on('layeradd', function(e){
+				console.log('layeradd'); 
+			});
 		});
 	</script>
 </body>
